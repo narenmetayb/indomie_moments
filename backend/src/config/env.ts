@@ -45,6 +45,10 @@ const envSchema = z.object({
   TERMII_API_KEY: z.string().optional(),
   TERMII_SENDER_ID: z.string().optional(),
 
+  // Bigture SMS (optional)
+  BIGTURE_API_KEY: z.string().optional(),
+  BIGTURE_SYSTEM_ID: z.string().optional(),
+
   // SMTP (optional – for admin password reset emails)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.preprocess((val) => {
@@ -177,6 +181,12 @@ refreshCookieOptions: (secure: boolean) => ({
     apiKey: env.TERMII_API_KEY,
     senderId: env.TERMII_SENDER_ID,
     baseUrl: "https://v3.api.termii.com",
+  },
+
+  bigture: {
+    apiKey: env.BIGTURE_API_KEY || "live1OaqXBH9kyF2w8dVUr0ibwgGvRHThv7dFPijxsEOvXPBgXhJLQJpztNj91NO41MJ77Qe5c",
+    systemId: env.BIGTURE_SYSTEM_ID || "trans",
+    baseUrl: "https://bigture.com.ng",
   },
 
   apiToken: env.API_TOKEN,
