@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { db } from "../../../../../db";
 import { user_otp, users } from "../../../../../db/schema";
 import type { User } from "../../../../../db/schema";
@@ -211,4 +211,44 @@ export async function incrementOTPAttemptsRepo(
       })
       .where(eq(user_otp.userId, user.id));
   }
+}
+
+/**
+ * Find user by google id
+ */
+export async function findByGoogleIdRepo(googleId: string): Promise<User | undefined> {
+  const [row] = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+  return row;
+}
+
+/**
+ * Find user by facebook id
+ */
+export async function findByFacebookIdRepo(facebookId: string): Promise<User | undefined> {
+  const [row] = await db.select().from(users).where(eq(users.facebookId, facebookId)).limit(1);
+  return row;
+}
+
+/**
+ * Find user by email
+ */
+export async function findByEmailRepo(email: string): Promise<User | undefined> {
+  const [row] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return row;
+}
+
+/**
+ * Create a new user (for social login)
+ */
+export async function createUserRepo(data: Partial<User>): Promise<User> {
+  const [user] = await db.insert(users).values(data as any).returning();
+  return user;
+}
+
+/**
+ * Update user data
+ */
+export async function updateUserRepo(id: string, data: Partial<User>): Promise<User> {
+  const [user] = await db.update(users).set(data as any).where(eq(users.id, id)).returning();
+  return user;
 }

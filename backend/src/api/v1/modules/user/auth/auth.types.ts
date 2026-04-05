@@ -1,6 +1,8 @@
 export interface AuthUser {
   id: string;
-  phoneNumber: string;
+  phoneNumber?: string | null;
+  email?: string | null;
+  avatar?: string | null;
   fullName?: string | null;
   campaignId?: string | null;
   createdAt: Date;

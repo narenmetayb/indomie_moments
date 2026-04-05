@@ -67,6 +67,13 @@ const envSchema = z.object({
     (val) => val === "true" || val === "1",
     z.boolean().default(false),
   ),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  FACEBOOK_APP_ID: z.string().optional(),
+  FACEBOOK_APP_SECRET: z.string().optional(),
+  BACKEND_URL: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z.string().optional(),
+  FACEBOOK_CALLBACK_URL: z.string().optional(),
 });
 
 const raw = envSchema.safeParse(process.env);
@@ -173,6 +180,19 @@ refreshCookieOptions: (secure: boolean) => ({
   },
 
   apiToken: env.API_TOKEN,
+
+  social: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID || "",
+      clientSecret: env.GOOGLE_CLIENT_SECRET || "",
+      callbackUrl: env.GOOGLE_CALLBACK_URL || `${env.BACKEND_URL || "http://localhost:8080"}/api/auth/google/callback`,
+    },
+    facebook: {
+      appId: env.FACEBOOK_APP_ID || "",
+      appSecret: env.FACEBOOK_APP_SECRET || "",
+      callbackUrl: env.FACEBOOK_CALLBACK_URL || `${env.BACKEND_URL || "http://localhost:8080"}/api/auth/facebook/callback`,
+    },
+  },
 } as const;
 function validateConfig(): void {
   const errors: string[] = [];

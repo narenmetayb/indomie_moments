@@ -17,7 +17,11 @@ export type UserStatus = (typeof USER_STATUS)[keyof typeof USER_STATUS];
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
-  phoneNumber: varchar("phone_number", { length: 20 }).notNull().unique(),
+  phoneNumber: varchar("phone_number", { length: 20 }).unique(),
+  email: varchar("email", { length: 255 }).unique(),
+  googleId: varchar("google_id", { length: 255 }).unique(),
+  facebookId: varchar("facebook_id", { length: 255 }).unique(),
+  avatar: varchar("avatar", { length: 500 }),
   campaignId: uuid("campaign_id").references(() => campaigns.id),
   fullName: varchar("fullName", { length: 255 }),
   status: varchar("status", { length: 20 }).default("pending").notNull(),

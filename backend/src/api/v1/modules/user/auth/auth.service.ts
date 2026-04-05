@@ -12,6 +12,11 @@ import {
   findByPhoneNumberRepo,
   findUserByIdRepo,
   saveOTPRepo,
+  findByGoogleIdRepo,
+  findByFacebookIdRepo,
+  findByEmailRepo,
+  createUserRepo,
+  updateUserRepo,
 } from "./auth.repository";
 import { config } from "../../../../../config/env";
 import { logger } from "../../../../../lib/logger";
@@ -29,6 +34,8 @@ function toAuthUser(user: User): AuthUser {
     phoneNumber: user.phoneNumber,
     fullName: user.fullName,
     campaignId: user.campaignId,
+    email: user.email,
+    avatar: user.avatar,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -365,6 +372,75 @@ export async function refreshUserTokensService(refreshToken: string) {
   } catch (error) {
     const message = error instanceof Error ? error.message : ERROR_MESSAGES.INTERNAL_ERROR;
     logger.error("Refresh tokens service error", { error: message });
+    throw new Error(message);
+  }
+}
+
+/**
+ * Handle social login (Google/Facebook)
+ */
+export async function handleSocialLoginService(data: {
+  email: string;
+  fullName: string;
+  avatar?: string;
+  googleId?: string;
+  facebookId?: string;
+}) {
+  try {
+    // 1. Find existing user by ID or Email
+    let user = data.googleId 
+      ? await findByGoogleIdRepo(data.googleId) 
+      : data.facebookId 
+        ? await findByFacebookIdRepo(data.facebookId)
+        : null;
+
+    if (!user && data.email) {
+      user = await findByEmailRepo(data.email);
+    }
+
+    // 2. Create user if they don't exist
+    if (!user) {
+      user = await createUserRepo({
+        email: data.email,
+        fullName: data.fullName,
+        avatar: data.avatar,
+        googleId: data.googleId,
+        facebookId: data.facebookId,
+        status: "verified", // Social login users are auto-verified
+      });
+      logger.info("Social Login: New user created", { userId: user.id });
+    } else {
+      // Update existing user's social IDs if they were missing
+      if (data.googleId && !user.googleId) {
+        await updateUserRepo(user.id, { googleId: data.googleId });
+      }
+      if (data.facebookId && !user.facebookId) {
+        await updateUserRepo(user.id, { facebookId: data.facebookId });
+      }
+      logger.info("Social Login: User logged in", { userId: user.id });
+    }
+
+    // 3. Generate JWT tokens
+    const accessToken = jwt.sign(
+      { id: user.id, type: "access" },
+      config.jwt.consumerSecret,
+      { expiresIn: "15m" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id, type: "refresh" },
+      config.jwt.consumerRefreshSecret,
+      { expiresIn: "7d" }
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user: toAuthUser(user),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ERROR_MESSAGES.INTERNAL_ERROR;
+    logger.error("Social login service error", { error: message });
     throw new Error(message);
   }
 }

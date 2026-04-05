@@ -144,3 +144,30 @@ export function logoutController(_req: Request, res: Response): void {
   res.clearCookie(config.app.cookieNames.userRefresh, { path: "/" });
   successResponse(res, { message: "Logged out successfully." });
 }
+
+/**
+ * Handle success callback from Google/Facebook
+ */
+export async function socialCallbackController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const result = req.user as any; 
+    if (!result || !result.accessToken) {
+      res.redirect(`${config.app.frontendBaseUrl}/login?error=auth_failed`);
+      return;
+    }
+
+    const accessOpts = config.app.cookieOptions(config.isProduction, 15 * 60);
+    const refreshOpts = config.app.refreshCookieOptions(config.isProduction);
+    
+    res.cookie(config.app.cookieNames.userAccess, result.accessToken, accessOpts);
+    res.cookie(config.app.cookieNames.userRefresh, result.refreshToken, refreshOpts);
+
+    // Redirect to frontend home page
+    res.redirect(`${config.app.frontendBaseUrl}/?social=success`);
+  } catch (err) {
+    res.redirect(`${config.app.frontendBaseUrl}/login?error=social_error`);
+  }
+}

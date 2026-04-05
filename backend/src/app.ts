@@ -6,6 +6,7 @@ import { preAuthRoutes, postAuthRoutes } from "./api/v1/routes";
 import { errorHandler } from "./api/v1/middlewares";
 import { API_PREFIX } from "./api/v1/common/constants";
 import { config } from "./config/env";
+import passport from "./config/passport.config";
 
 connectDB();
 
@@ -21,6 +22,7 @@ export function createApp() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+  app.use(passport.initialize());
 
   app.get("/health", async (_req: Request, res: Response) => {
     const dbOk = await pingDB();
