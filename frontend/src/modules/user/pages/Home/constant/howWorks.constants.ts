@@ -38,28 +38,48 @@ export const HOW_WORKS_DECORATIONS = [
 
 export const HOW_WORKS_STEPS = [
   {
-    step: 1,
+    step: "📱",
     title: "Sign Up",
     description: "Quick registration with your phone number",
     highlight: false,
+    previewContent: {
+      type: "form",
+      title: "Register/Login",
+      details: ["👤 Name", "📞 Phone No.", "🔒 OTP"],
+    }
   },
   {
-    step: 2,
+    step: "📸",
     title: "Snap & Share",
     description: "Show us your best Indomie creation!",
     highlight: false,
+    previewContent: {
+      type: "image",
+      title: "Upload Recipe",
+      details: ["🍲 Food Photo", "📝 Description"],
+    }
   },
   {
-    step: 3,
+    step: "❤️",
     title: "Collect Likes",
     description: "Get love from the Indomie community",
     highlight: false,
+    previewContent: {
+      type: "feed",
+      title: "Moments Feed",
+      details: ["👍 Like", "💬 Fun"],
+    }
   },
   {
-    step: 4,
+    step: "🏆",
     title: "Win Big!",
     description: "Top posts win awesome prizes weekly",
     highlight: true,
     icon: ChiliPepper,
+    previewContent: {
+      type: "prize",
+      title: "Leaderboard",
+      details: ["🥇 1st Prize", "📱 Airtime"],
+    }
   },
 ];
