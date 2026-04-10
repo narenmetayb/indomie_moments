@@ -99,6 +99,13 @@ async function sendBigtureOTP(
     }
   };
 
+  logger.info("Sending OTP via Bigture", {
+    phone: cleanPhone,
+    network,
+    senderId,
+    url: `${config.bigture.baseUrl}/api/sms/send`,
+  });
+
   const result = await axiosPost<any>(
     `${config.bigture.baseUrl}/api/sms/send`,
     payload,
@@ -112,11 +119,38 @@ async function sendBigtureOTP(
     }
   );
 
+  // Log the full response for debugging
+  logger.info("Bigture API response", {
+    phone: cleanPhone,
+    bigtureResponse: JSON.stringify(result),
+  });
+
+  // Validate Bigture response — check common success indicators
+  const isSuccess =
+    result?.status === "success" ||
+    result?.status === "Success" ||
+    result?.status === 200 ||
+    result?.status === "200" ||
+    result?.responseCode === "00" ||
+    result?.response_code === "00" ||
+    result?.sent === true ||
+    result?.message?.toLowerCase()?.includes("sent") ||
+    result?.message?.toLowerCase()?.includes("success");
+
+  if (!isSuccess) {
+    logger.error("Bigture OTP failed - API returned non-success", {
+      phone: cleanPhone,
+      response: JSON.stringify(result),
+    });
+    throw new Error(
+      `Bigture SMS failed: ${result?.message || result?.error || JSON.stringify(result)}`
+    );
+  }
+
   logger.info("OTP sent successfully via Bigture", {
     phone: cleanPhone,
     network,
     senderId,
-    bigtureResponse: result,
   });
 
   return {
